@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Registration</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <style>
+        /* Default styles for larger screens */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .responsive-div {
+            max-width: 50%;
+            height: 50%;
+            margin: 70px;
+        }
+
+        .responsive-video {
+            max-width: 50%;
+            height: 50%;
+            margin: 70px;
+        }
+
+        .inline-content {
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .inline-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .inline-paragraph {
+            background-color: black;
+            color: white;
+            margin: 30px;
+            font-weight: bold;
+            margin-left: 0px;
+        }
+
+        /* Styles for mobile devices */
+        @media only screen and (max-width: 600px) {
+            .responsive-div {
+                max-width: 70%;
+                height: 70%;
+                margin: 50px;
+            }
+
+            .responsive-video {
+                max-width: 70%;
+                height: 70%;
+                margin: 50px;
+            }
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var urlParams = new URLSearchParams(window.location.search);
+            var roll = urlParams.get('roll');
+            if (roll) {
+                // Make an AJAX request to check if user details exist
+                $.ajax({
+                    url: '/CheckUserDetails',
+                    type: 'GET',
+                    data: {
+                        roll: roll
+                    },
+                    success: function (response) {
+                        if (response === "EXIST") {
+                            // User details exist, display the message
+                            $("#user").text("User details already exist");
+                        } else {
+                            // User details do not exist, proceed with opening the camera
+                            $("#user").text("Registering face for " + roll);
+                            navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 360 } })
+                                .then(function (stream) {
+                                    var video = document.getElementById('video');
+                                    video.srcObject = stream;
+
+                                    // Continuously send video frames to the Flask application
+                                    var canvas = document.createElement('canvas');
+                                    var canvasWidth = 480;
+                                    var canvasHeight = 360;
+
+                                    function adjustCanvasSize() {
+                                        // Maintain the aspect ratio of the video
+                                        var aspectRatio = video.videoWidth / video.videoHeight;
+                                        if (aspectRatio > 1) {
+                                            canvas.width = canvasWidth;
+                                            canvas.height = canvasWidth / aspectRatio;
+                                        } else {
+                                            canvas.width = canvasHeight * aspectRatio;
+                                            canvas.height = canvasHeight;
+                                        }
+                                    }
+
+                                    function sendVideoFrame() {
+                                        adjustCanvasSize();
+                                        var context = canvas.getContext('2d');
+                                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                        var frame = canvas.toDataURL('image/jpeg', 0.5);
+
+                                        // Send the frame to the Flask application using AJAX
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.open('POST', '/RegisterFace', true);
+                                        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                                        xhr.onreadystatechange = function () {
+                                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                                if (xhr.status === 200) {
+                                                    // Request was successful
+                                                    var response = xhr.responseText;
+                                                    document.getElementById("res").innerHTML = response;
+                                                    if (response != "FACE_DETECTION_COMPLETED") {
+                                                        requestAnimationFrame(sendVideoFrame);
+                                                    } else {
+                                                        // Face detection completed, proceed to store data
+                                                        var name = document.getElementById('name').value;
+                                                        var batch = document.getElementById('batch').value;
+                                                        storeUserData(roll, name, batch);
+                                                    }
+                                                } else {
+                                                    // Request failed
+                                                    console.error('Request failed with status:', xhr.status);
+                                                }
+                                            }
+                                        };
+
+                                        xhr.send('frame=' + encodeURIComponent(frame) + '&roll=' + encodeURIComponent(roll));
+                                    }
+
+                                    video.addEventListener('loadedmetadata', function () {
+                                        sendVideoFrame();
+                                    });
+                                })
+                                .catch(function (error) {
+                                    console.log('Error accessing camera:', error);
+                                });
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error checking user details:', error);
+                    }
+                });
+            }
+        });
+
+        function storeUserData(roll, name, batch) {
+            // Make an AJAX request to store user data
+            $.ajax({
+                url:'/InsertData',
+                type: 'POST',
+                data: {
+                    roll: roll,
+                    name: name,
+                    batch: batch
+                },
+                success: function (response) {
+                    console.log('User data stored successfully');
+                },
+                error: function (error) {
+                    console.error('Error storing user data:', error);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Face Registration</h1>
+
+    <p id="user"></p>
+    <div class="responsive-div">
+        <video id="video" class="responsive-video" autoplay></video>
+        <div class="inline-content">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMnP5Jk1XWf5pfCdVvNT9UpcOtbKY0DknsFi-STA-hAtn-MEWfN_k6a22-o5s&s" class="inline-img" id="myimg" style="display:none">
+            <p id="reco" class="inline-paragraph"></p>
+        </div>
+    </div>
+
+    <p id="res"></p>
+    <form method="post" action="/InsertData">
+        <input type="number" placeholder="Enter roll" name="roll" required>
+        <input type="text" placeholder="Enter name" name="name" id="name" required>
+        <input type="text" placeholder="Enter batch" name="batch" id="batch" required>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

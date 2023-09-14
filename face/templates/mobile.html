@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Face Recognition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="mt-0 bg-danger" style="color:white; text-align: center;">Face Recognition</h1>
+
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="container col-sm-4" style="align-items: center;">
+            <video id="video" class="mt-5 mb-2" autoplay></video>
+        </div>
+
+        <div class="m-1 col-sm-4">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMnP5Jk1XWf5pfCdVvNT9UpcOtbKY0DknsFi-STA-hAtn-MEWfN_k6a22-o5s"
+                class="inline-img" id="myimg" style="display:none">
+            <p id="reco" class="inline-paragraph"></p>
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+
+    <div id="tableContainer" style="margin:30px; max-width: 70%; height: auto;"></div>
+
+    <script>
+        let names = {}
+        var lec_id = prompt("Enter lecture id");
+        var tableContainer = document.getElementById("tableContainer");
+        var table = document.createElement("table");
+
+        // Create table header
+        var thead = document.createElement("thead");
+        var headerRow = document.createElement("tr");
+        var headerNames = ["ID", "Name", "Attendance"];
+
+        headerNames.forEach(function (name) {
+            var th = document.createElement("th");
+            th.textContent = name;
+            headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create table body
+        var tbody = document.createElement("tbody");
+
+        // Get access to the user's camera
+        navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } })
+            .then(function (stream) {
+                var video = document.getElementById('video');
+                video.srcObject = stream;
+
+                // Continuously send video frames to the Django application
+                var canvas = document.createElement('canvas');
+                var canvasWidth = 1280;
+                var canvasHeight = 720;
+
+                function adjustCanvasSize() {
+                    // Maintain the aspect ratio of the video
+                    var aspectRatio = video.videoWidth / video.videoHeight;
+                    if (aspectRatio > 1) {
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasWidth / aspectRatio;
+                    } else {
+                        canvas.width = canvasHeight * aspectRatio;
+                        canvas.height = canvasHeight;
+                    }
+                }
+
+                function sendVideoFrame() {
+                    adjustCanvasSize();
+                    var context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    var frame = canvas.toDataURL('image/png',0.9);
+
+                    // Send the frame to the Django application using AJAX
+                    var xhr = new XMLHttpRequest();
+                    // Replace with your server endpoint
+                    xhr.open('POST', '/video_frame', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                    xhr.onreadystatechange = function () {
+                        var xhrEnable = true;
+
+                        if (xhr.readyState === XMLHttpRequest.DONE) {
+                            if (xhr.status === 200) {
+                                // Request was successful
+                                var response = xhr.responseText;
+                                try {
+                                    var MasterjsonData = JSON.parse(response); // Parse the response to JSON format
+                                } catch (error) {
+                                    document.getElementById("reco").innerHTML = response;
+                                    xhrEnable = false;
+                                }
+                                var jsonData = MasterjsonData[0];
+
+                                if (typeof jsonData === 'object' && jsonData !== null) {
+                                    tbody.innerHTML = ''; // Clear existing table body
+
+                                    Object.keys(jsonData).forEach(function (key) {
+                                        var data = jsonData[key];
+
+                                        var row = document.createElement("tr");
+
+                                        var idCell = document.createElement("td");
+                                        idCell.textContent = key;
+                                        row.appendChild(idCell);
+
+                                        var nameCell = document.createElement("td");
+                                        nameCell.textContent = data.name;
+                                        row.appendChild(nameCell);
+
+                                        var attendanceCell = document.createElement("td");
+                                        attendanceCell.textContent = data.attendance;
+                                        row.appendChild(attendanceCell);
+
+                                        tbody.appendChild(row);
+                                    });
+
+                                    table.appendChild(tbody);
+                                    tableContainer.appendChild(table);
+                                } else {
+                                    console.error('Invalid response data format');
+                                }
+                                if (MasterjsonData[1] != "") {
+                                    document.getElementById("myimg").style.display = "block";
+                                    document.getElementById("reco").style.display = "block";
+
+                                    MasterjsonData[1].forEach(function (e) {
+                                        if (!(e in names)) {
+                                            names[e] = MasterjsonData[0][e]["name"];
+                                        }
+                                    });
+
+                                    document.getElementById("reco").innerHTML =
+                                        "Users identified in the last frame: " + Object.values(names).join(",") +
+                                        "<br>No. of users identified as unknown: " + MasterjsonData[2];
+
+                                    xhrEnable = false;
+                                }
+
+                                
+                                    requestAnimationFrame(sendVideoFrame);
+                                
+                            } else {
+                                // Request failed
+                                console.error('Request failed with status:', xhr.status);
+                            }
+                        }
+                    };
+
+                    xhr.send('frame=' + encodeURIComponent(frame) + '&lec_id=' + encodeURIComponent(lec_id));
+                }
+
+                video.addEventListener('loadedmetadata', function () {
+                    sendVideoFrame();
+                });
+            })
+            .catch(function (error) {
+                console.log('Error accessing camera:', error);
+            });
+    </script>
+</body>
+
+</html>

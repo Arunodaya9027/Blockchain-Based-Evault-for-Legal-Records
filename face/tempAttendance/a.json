@@ -1,0 +1,34 @@
+{
+    "100": {
+        "name": "Athrav",
+        "attendance": "P"
+    },
+    "101": {
+        "name": "Vishnu",
+        "attendance": "P"
+    },
+    "102": {
+        "name": "Pavan",
+        "attendance": "P"
+    },
+    "103": {
+        "name": "Karan",
+        "attendance": "P"
+    },
+    "104": {
+        "name": "Arun",
+        "attendance": "P"
+    },
+    "106": {
+        "name": "Sagar",
+        "attendance": "FACE NOT PRESENT"
+    },
+    "107": {
+        "name": "amit",
+        "attendance": "A"
+    },
+    "110": {
+        "name": "Mohit",
+        "attendance": "P"
+    }
+}
