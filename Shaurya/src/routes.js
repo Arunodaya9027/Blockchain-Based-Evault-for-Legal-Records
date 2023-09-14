@@ -64,21 +64,9 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/maps",
-    name: "Maps",
-    icon: "ni ni-pin-3 text-orange",
-    component: <Maps />,
-    layout: "/admin",
-  },{
     path: "/tables",
     name: "Notice Corner",
     icon: "ni ni-notification-70 text-dark",
-    component: <Tables />,
-    layout: "/admin",
-  },{
-    path: "/tables",
-    name: "ShauryaMS Notification",
-    icon: "ni ni-bell-55 text-red",
     component: <Tables />,
     layout: "/admin",
   },{
@@ -88,13 +76,6 @@ var routes = [
   component: <Icons />,
   layout: "/admin",
 },
-  {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
-    component: <Profile />,
-    layout: "/admin",
-  },
   {
   path: "/icons",
   name: "Access & Security",
@@ -108,6 +89,12 @@ var routes = [
   component: <Icons />,
   layout: "/admin",
 },{
+  path: "/profile",
+  name: "User Profile",
+  icon: "ni ni-settings text-gray",
+  component: <Profile />,
+  layout: "/admin",
+},{
   path: "/icons",
   name: "HelpDesk",
   icon: "ni ni-planet text-blue",
@@ -119,13 +106,6 @@ var routes = [
     name: "Log Out",
     icon: "ni ni-key-25 text-info",
     component: <Login />,
-    layout: "/auth",
-  },
-  {
-    path: "/register",
-    name: "Register",
-    icon: "ni ni-circle-08 text-pink",
-    component: <Register />,
     layout: "/auth",
   },
 

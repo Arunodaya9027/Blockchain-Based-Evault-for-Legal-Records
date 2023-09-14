@@ -12,7 +12,7 @@ import {
   UncontrolledTooltip,
 } from "reactstrap";
 // core components
-import Header from "components/Headers/Header.js";
+import HeadDesign from "components/Headers/HeadDesign.js";
 
 import FileUpload from '../../../variables/FileUpload';
 // import './Share.css';
@@ -21,7 +21,7 @@ import FileUpload from '../../../variables/FileUpload';
 const Share = () => {
   return (
     <>
-    <Header />
+    <HeadDesign />
     <Container className="mt--7" fluid>
         {/* Table */}
         <Row>
