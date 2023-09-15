@@ -18,12 +18,34 @@
 
 // reactstrap components
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
+import Greeting from "variables/Greeting";
 
+const userui = {
+  fontSize: '18px',
+  padding: '5px',
+};
 const Header = () => {
   return (
     <>
       <div className="header bg-gradient-info pb-8 pt-5 pt-md-8">
         <Container fluid>
+          <Card className="card-stats mb-3">
+            <CardBody>
+              <Row>
+                <div className="col">
+                  <CardTitle
+                    tag="h5"
+                    className="text-uppercase text-muted mb-0"
+                  >
+                    <div class="welcome-user-banner"> 
+                      <Greeting />
+                      <span class="user" style={userui}>Jessica Jones</span> 
+                    </div>
+                  </CardTitle>
+                </div>
+              </Row>
+            </CardBody>
+          </Card>
           <div className="header-body">
             {/* Card stats */}
             <Row>

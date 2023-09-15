@@ -1,5 +1,6 @@
 import {useState} from "react";
 import '../assets/css/FileUpload.css';
+import MetaMaskButton from "./MetaMaskButton";
 
 const FileUpload=()=>{
 const [file,setFile]=useState(null);
@@ -45,13 +46,14 @@ return<>
         {cid && <a href={`https://${cid}.ipfs.dweb.link`}><img src={`https://${cid}.ipfs.dweb.link`} height={"250px"} /></a>}
         </div>
         <div className="transaction">
-        {transaction && <a href={`https://mumbai.polygonscan.com/tx/${transaction}`}>Transaction Detials</a>}
+        {transaction && <a href={`https://mumbai.polygonscan.com/tx/${transaction}`} target="_blank">Transaction Detials</a>}
     </div>
     <div className="form">
         <form onSubmit={handleSubmit}>
             <input type="file" className="choose" onChange={retreieveFile}/>
             <button className="btn">NFt Minter</button>
         </form>
+        <MetaMaskButton />
     </div>
 </>
 }

@@ -29,11 +29,11 @@ const Footer = () => {
             © {new Date().getFullYear()}{" "}
             <a
               className="font-weight-bold ml-1"
-              href="https://www.creative-tim.com?ref=adr-admin-footer"
+              href="https://github.com/Arunodaya9027/Team-Shaurya"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Creative Tim
+              Team Shaurya
             </a>
           </div>
         </Col>
@@ -46,7 +46,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                Creative Tim
+                Master
               </NavLink>
             </NavItem>
 

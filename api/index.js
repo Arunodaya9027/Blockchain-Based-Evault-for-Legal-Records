@@ -61,7 +61,7 @@ const starton = axios.create({
         })
         return nft.data;
     }
-    const RECEIVER_ADDRESS = "0x84EF41f146beAf8C4725EfDA3EAF27E7eEE39B6B"
+    const RECEIVER_ADDRESS = "0x90a484da305fC6890D5D9f4258B5C959742Ca6bF"
     const ipfsImgData = await uploadImageOnIpfs();
     const ipfsMetadata = await uploadMetadataOnIpfs(ipfsImgData.cid);
     const nft = await mintNFT(RECEIVER_ADDRESS,ipfsMetadata.cid)
